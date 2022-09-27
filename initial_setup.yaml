@@ -1,0 +1,44 @@
+---
+- hosts: all
+  gather_facts: false
+
+  pre_tasks:
+    - name: "Saving the desired port ({{ansible_port}})"
+      set_fact:
+        original_port: "{{ansible_port}}"
+
+    - name: "Updating the currently used ansible port to 22"
+      set_fact:
+        ansible_port: 22
+
+  tasks:
+    - name: Setup the sudo group for passwordless
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: 'Adding the user "{{username}}" to the sudo group'
+      user:
+        name: "{{username}}"
+        groups: sudo
+        append: yes
+
+    - name: Updating the port
+      lineinfile:
+        path: "/etc/ssh/sshd_config"
+        regex: "^(#?)Port "
+        line: "Port {{original_port}}"
+
+    - name: Disabling root login
+      lineinfile:
+        path: "/etc/ssh/sshd_config"
+        regex: "^(#?)PermitRootLogin "
+        line: "PermitRootLogin no"
+
+    - name: Restart the sshd server
+      systemd:
+        state: restarted
+        name: sshd

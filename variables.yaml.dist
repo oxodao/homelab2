@@ -1,0 +1,7 @@
+samba:
+  shares:
+    username: shares
+    password: my_share_password
+  documents:
+    username: documents
+    password: my_documents_password

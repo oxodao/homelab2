@@ -1,0 +1,7 @@
+---
+- hosts: all
+  tasks:
+    - name: Loading private variables
+      include_vars:
+        file: ../variables.yaml
+        name: private_vars

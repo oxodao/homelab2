@@ -1,0 +1,3 @@
+- import_playbook: setup/load_variables.yaml
+- import_playbook: setup/init_setup.yaml
+- import_playbook: setup/dnsmasq.yaml

@@ -1,0 +1,61 @@
+---
+- hosts: all
+  tags: [ init ]
+  become: yes
+  vars:
+    packages:
+      - 'build-essential'
+      - fuse
+      - restic
+      - rsync
+      - sqlite3
+      - unzip
+      - zip
+      - zsh
+
+  tasks:
+    - import_role: { name: 'geerlingguy.ntp' }
+    - import_role: { name: 'jnv.unattended-upgrades' }
+
+    - name: Setting the hostname
+      hostname:
+        name: "{{ hostname }}"
+
+    - name: Installing standard software
+      apt:
+        name: "{{packages}}"
+
+    - name: Create the fuse group for Appimages
+      group:
+        name: fuse
+        state: present
+
+    - name: Enable fuse
+      modprobe:
+        name: fuse
+        state: present
+
+    - name: Downloading latest neovim
+      get_url:
+        url: https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
+        dest: /opt/nvim.appimage
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: 0777
+
+    - name: Removing the vim bin
+      apt:
+        name: vim
+        state: absent
+
+    - name: Symlinking it
+      file:
+        src: /opt/nvim.appimage
+        dest: /usr/bin/nvim
+        state: link
+
+    - name: Symlinking it (as vim)
+      file:
+        src: /opt/nvim.appimage
+        dest: /usr/bin/vim
+        state: link
